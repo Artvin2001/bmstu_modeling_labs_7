@@ -1,0 +1,259 @@
+\documentclass[12pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+
+\usepackage{indentfirst}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{biblatex}
+\usepackage{float}
+\usepackage{floatrow}
+\usepackage[13pt]{extsizes}
+
+\addbibresource{report.bib}
+
+\lstset{extendedchars=\true, frame=single, numbers=left}
+
+\usepackage[left=3cm,right=1.5cm, top=2cm,bottom=2cm,bindingoffset=0cm]{geometry}
+\usepackage{titlesec, blindtext, color}
+\newcommand{\hsp}{\hspace{20pt}}
+\titleformat{\chapter}[hang]{\Huge\bfseries}{\thechapter\hsp{|}\hsp}{0pt}{\Huge\bfseries}
+
+\begin{document}
+\def\chaptername{}
+\thispagestyle{empty}
+\begin{titlepage}
+	\noindent \begin{minipage}{0.15\textwidth}
+	\includegraphics[width=\linewidth]{bmstu.jpg}
+	\end{minipage}
+	\noindent\begin{minipage}{0.9\textwidth}\centering
+		\textbf{Министерство науки и высшего образования Российской Федерации}\\
+		\textbf{Федеральное государственное бюджетное образовательное учреждение высшего образования}\\
+		\textbf{~~~«Московский государственный технический университет имени Н.Э.~Баумана}\\
+		\textbf{(национальный исследовательский университет)»}\\
+		\textbf{(МГТУ им. Н.Э.~Баумана)}
+	\end{minipage}
+	
+	\noindent\rule{18cm}{3pt}
+	\newline\newline
+	\noindent ФАКУЛЬТЕТ $\underline{\text{«Информатика и системы управления»}}$ \newline\newline
+	\noindent КАФЕДРА $\underline{\text{«Программное обеспечение ЭВМ и информационные технологии»}}$\newline\newline\newline\newline\newline
+	
+	
+	\begin{center}
+        \Large\textbf{Отчет по лабораторной работе №1 по курсу "Моделирование"}
+    \end{center}
+
+    \\
+    %\noindent\textbf{Тема} $\underline{\text{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}}$\newline\newline\newline
+    \noindent\textbf{Студент} $\underline{\text{Заборовская А. Д.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}}$\newline\newline
+    \noindent\textbf{Группа} $\underline{\text{ИУ7-73Б~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}}$\newline\newline
+    \noindent\textbf{Оценка} $\underline{\text{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~}}$\newline\newline
+    \noindent\textbf{Преподаватель} $\underline{\text{Рудаков И. B.~~~~~~~~~~~~~~~~~~~~~~~~~~}}$\newline
+
+	
+	\begin{center}
+		\vfill
+		Москва~---~\the\year
+		~г.
+	\end{center}
+\end{titlepage}
+
+\chapter{Задание}
+Разработать программу для построения графиков функции распределения и функции плотности распределения для следующих видов распределений:
+\begin{itemize}
+    \item равномерного распределения;
+    \item экспоненциального распределения.
+\end{itemize}
+Реализовать графический интерфейс, который будет давать пользователю возможность выбора вида распределения и настройки его параметров.
+
+\chapter{Реализация}
+\section{Равномерное распределение}
+Равномерное распределение -- это распределение случайной вещественной величины, принимающей значения, принадлежащие некоторому промежутку конечной длины, характеризующееся тем, что плотность вероятности на этом промежутке почти всюду постоянна.\\
+
+Обозначение равномерного распределения: X \sim R(a, b), где a, b \in R.\\
+
+Функция распределения:
+\[ F(x) =
+  \begin{cases}
+    0       & \quad \text{при } x < a\\
+    \frac{x - a}{b - a}  & \quad \text{при } a <= x <= b\\
+    1       & \quad \text{при} x > b
+  \end{cases}
+\]
+
+Функция плотности распределения:
+\[ f(x) =
+  \begin{cases}
+    0       & \quad \text{при } x <= a\\
+    \frac{1}{b - a}  & \quad \text{при } a < x <= b\\
+    0       & \quad \text{при} x > b
+  \end{cases}
+\]
+
+На листинге 2.1 приведены функции для вычисления значений и построения функций для равномерного распределения.
+
+\begin{lstlisting}[label=some-code,caption=Функии для равномерного распределения, language=Python]
+def uni_func_pl(x, a, b):
+    if x < a or x > b:
+        return 0
+    else:
+        return 1 / (b - a)
+    
+def uni_func(x, a, b):
+    if x <= a:
+        return 0
+    elif x > b:
+        return 1
+    else:
+        return (x - a) / (b - a)
+
+def begin_uni(entry_a, entry_b):
+    try:
+       a = float(entry_a.get())
+       b = float(entry_b.get())
+    except:
+        tk.messagebox.showerror(title='Ошибка ввода', 
+            message='Введите корректные данные')
+        return
+    
+    if (a > b):
+        tk.messagebox.showerror(title='Ошибка ввода', 
+            message='Левая граница должна быть меньше правой')
+        return
+    xu1, xu2, xu3 = [], [], []
+    xu = []
+    yu = []
+    yup1, yup2, yup3 = [], [], []
+    gr1 = a - (b - a) / 2
+    gr2 = b + (b - a) / 2
+    i = gr1
+    
+    while i < gr2:
+        if i < a:
+            xu1.append(i)
+        elif i > b:
+            xu3.append(i)
+        else:
+            xu2.append(i)
+        xu.append(i)
+        i += (gr2 - gr1) / 100
+    for i in range(len(xu)):
+        yu.append(uni_func(xu[i], a, b))
+
+    for i in range(len(xu1)):
+        yup1.append(uni_func_pl(xu1[i], a, b))
+
+    for i in range(len(xu2)):
+        yup2.append(uni_func_pl(xu2[i], a, b))
+
+    for i in range(len(xu3)):
+        yup3.append(uni_func_pl(xu3[i], a, b))
+        
+    fig, ax = plt.subplots(figsize=(5, 3))
+    ax.grid()
+    plt.plot(xu1, yup1, color='m')
+    plt.plot(xu2, yup2, color='m')
+    plt.plot(xu3, yup3, color='m')
+    plt.title('Функция плотности распределения')
+
+    fig2, ax2 = plt.subplots(figsize=(5, 3))
+    ax2.grid()
+    plt.plot(xu, yu)
+    plt.title('Функция распределения')
+    
+    plt.show()
+\end{lstlisting}
+
+\section{Экспоненциальное распределение}
+Экспоненциальное распределение -- это абсолютно непрерывное распределение, моделирующее время между двумя последовательными свершениями одного и того же события.\\
+
+Обозначение экспоненциального распределения: X \sim Exp(\gamma), где \gamma > 0
+
+Функция распределения:
+\[ F(x) =
+  \begin{cases}
+    0       & \quad \text{при } x <= 0\\
+    1 - \exp^{-\gamma x}  & \quad \text{при } x > 0
+  \end{cases}
+\]
+
+Функция плотности распределения:
+\[ f(x) =
+  \begin{cases}
+    0       & \quad \text{при } x < 0\\
+    \gamma \exp^{-\gamma x}  & \quad \text{при } x >= 0
+  \end{cases}
+\]
+
+На листинге 2.2 приведены функции для вычисления значений и построения функций для экспоненциального распределения.
+
+\begin{lstlisting}[label=some-code,caption=Функии для экспоненциального распределения, language=Python]
+def exp_func(x, gamma):
+    gamma = -gamma
+    if x <= 0:
+        return 0
+    else:
+        return 1 - exp(x * gamma)
+
+def exp_func_pl(x, gamma):
+    if x < 0:
+        return 0
+    else:
+        return gamma * exp(x * (-gamma))
+
+def begin_exp(entry_al):
+    try:
+        gamma = float(entry_al.get())
+    except:
+        tk.messagebox.showerror(title='Ошибка ввода', 
+            message='Введите корректные данные')
+        return
+
+    if gamma <= 0:
+        tk.messagebox.showerror(title='Ошибка ввода', 
+            message='Параметр должен быть больше 0')
+        return
+    xe = []
+    ye = []
+    yep = []
+    i = 0
+    gr2 = 10 / gamma
+    
+    while i < gr2:
+        xe.append(i)
+        i += (gr2 + 1) / 100
+    for i in range(len(xe)):
+        ye.append(exp_func(xe[i], gamma))
+        yep.append(exp_func_pl(xe[i], gamma))
+
+    fig, ax = plt.subplots(figsize=(5, 3))
+    ax.grid()
+    plt.plot(xe, yep, color='m')
+    plt.title('Функция плотности распределения')
+
+    fig2, ax2 = plt.subplots(figsize=(5, 3))
+    ax2.grid()
+    plt.plot(xe, ye)
+    plt.title('Функция распределения')
+    
+    plt.show()
+\end{lstlisting}
+\chapter{Примеры работы}
+
+На рисунках 3.1 и 3.2 приведены примеры работы программы.
+
+\begin{figure}[ht!]	
+	\centering{
+		\includegraphics[width=1\textwidth]{p2.png}}
+		\caption{Пример работы для равномерного распределенния}
+\end{figure}
+
+\begin{figure}[ht!]	
+	\centering{
+		\includegraphics[width=1\textwidth]{p1.png}}
+		\caption{Пример работы для экспоненциального распределения}
+\end{figure}
+
+\end{document}
